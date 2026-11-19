@@ -1,4 +1,38 @@
 
+<!-- identity-block -->
+<div align="center">
+
+# ui
+
+<sub>Beautifully designed, accessible components and a code distribution platform.</sub>
+
+</div>
+
+## At a glance
+
+| Field | Detail |
+| --- | --- |
+| Repository | ui |
+| Primary language | TypeScript |
+| Topics | components, design-system, react, shadcn-ui, tailwindcss, typescript |
+| License | MIT |
+| Branch | main |
+| Maintainer | [@devarent](https://github.com/devarent) |
+
+## Overview
+
+ui is a hands-on repository focused on: Beautifully designed, accessible components and a code distribution platform.. Primary language: TypeScript. Topics: components, design-system, react, shadcn-ui, tailwindcss, typescript. The README below documents the project; use the table above for a quick overview.
+
+### Global references
+
+<div align="center">
+
+🇮🇸 Iceland &middot; 🇳🇿 New Zealand &middot; 🇨🇭 Switzerland &middot; 🇸🇮 Slovenia &middot; 🇮🇪 Ireland &middot; 🇦🇹 Austria &middot; 🇵🇹 Portugal &middot; 🇸🇬 Singapore &middot; 🇫🇮 Finland
+
+</div>
+
+---
+
 <!-- dbx-style-kit -->
 <div align="center">
 
