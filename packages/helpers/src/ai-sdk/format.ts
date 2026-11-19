@@ -10,7 +10,12 @@ import type {
 
 import { assertNever } from "../core"
 import type { ChatFormat, ChunkEncoder } from "../core"
-import { eventsFromParts, getMessageText, materializeParts } from "./parts"
+import {
+  eventsFromParts,
+  getMessageText,
+  getToolCalls,
+  materializeParts,
+} from "./parts"
 
 /**
  * The AI SDK `ChatFormat` plugin. Pass to `createChatRuntime` for advanced
@@ -90,6 +95,10 @@ export function createAiSdkFormat<
 
     getMessageMetadata(message) {
       return message.metadata
+    },
+
+    getToolCalls(message) {
+      return getToolCalls(message)
     },
 
     encodeChunk(chunk) {
@@ -172,11 +181,18 @@ export function createAiSdkFormat<
             dynamic: chunk.dynamic,
             title: chunk.title,
           } as Chunk
+        case "tool-approval-request":
+          return {
+            type: "tool-approval-request",
+            approvalId: chunk.approvalId,
+            toolCallId: chunk.toolCallId,
+          } as Chunk
         case "tool-output-available":
           return {
             type: "tool-output-available",
             toolCallId: chunk.toolCallId,
             output: chunk.output,
+            preliminary: chunk.preliminary,
             providerExecuted: chunk.providerExecuted,
             toolMetadata: chunk.toolMetadata,
             dynamic: chunk.dynamic,
@@ -230,8 +246,13 @@ export function createAiSdkFormat<
 
     createTransport(transportContext, options = {}) {
       return {
-        async sendMessages({ messages, messageId, abortSignal }) {
-          const turn = transportContext.resolveTurn(messages, messageId)
+        async sendMessages({ messages, messageId, abortSignal, trigger }) {
+          // Automatic sends after tool results and approvals pass the last
+          // assistant message's id; only regeneration may replay a turn by id.
+          const turn = transportContext.resolveTurn(
+            messages,
+            trigger === "regenerate-message" ? messageId : undefined
+          )
 
           if (!turn) {
             throw new Error("No assistant response found for this transcript.")

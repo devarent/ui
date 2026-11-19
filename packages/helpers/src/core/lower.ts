@@ -154,6 +154,18 @@ export function lowerEvents<
         })
         break
       }
+      case "tool-approval-request": {
+        // The gated output stays script-side; only the request goes on the wire.
+        steps.push({
+          kind: "chunk",
+          chunk: {
+            type: "tool-approval-request",
+            approvalId: event.approvalId,
+            toolCallId: event.toolCallId,
+          },
+        })
+        break
+      }
       case "tool-output": {
         steps.push({
           kind: "chunk",
@@ -161,6 +173,7 @@ export function lowerEvents<
             type: "tool-output-available",
             toolCallId: event.toolCallId,
             output: event.output,
+            preliminary: event.preliminary,
             providerExecuted: event.providerExecuted,
             toolMetadata: event.toolMetadata,
             dynamic: event.dynamic,

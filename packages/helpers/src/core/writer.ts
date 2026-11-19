@@ -9,6 +9,7 @@ import type {
   SourceDocumentPayload,
   SourceUrlPayload,
   StreamTextOptions,
+  ToolOutputOptions,
   ToolSet,
   ToolWriterOptions,
 } from "./types"
@@ -22,11 +23,12 @@ import {
 /**
  * Lifecycle handle returned by `writer.tool()`. Chain `sleep()` between the
  * input and its `output()`/`error()`/`denied()` resolution to script tool
- * latency.
+ * latency. Pass `{ preliminary: true }` to `output()` to stream progress
+ * before the final output, as a streaming `execute` does.
  */
 export type ToolHandle<OUTPUT> = {
   sleep(delayMs: number): ToolHandle<OUTPUT>
-  output(output: OUTPUT): ToolHandle<OUTPUT>
+  output(output: OUTPUT, options?: ToolOutputOptions): ToolHandle<OUTPUT>
   error(errorText?: string): ToolHandle<OUTPUT>
   denied(): ToolHandle<OUTPUT>
 }
@@ -157,6 +159,14 @@ export function createEventWriter<
         input: clonedOptions.input ?? {},
       })
 
+      function assertResolvable(method: string) {
+        if (clonedOptions.needsApproval) {
+          throw new Error(
+            `A needsApproval tool call resolves from the user's decision; remove the ${method}() call.`
+          )
+        }
+      }
+
       const handle: ToolHandle<TOOLS[NAME]["output"]> = {
         sleep(delayMs: number) {
           events.push({
@@ -168,11 +178,13 @@ export function createEventWriter<
           return handle
         },
 
-        output(output: TOOLS[NAME]["output"]) {
+        output(output: TOOLS[NAME]["output"], options: ToolOutputOptions = {}) {
+          assertResolvable("output")
           events.push({
             kind: "tool-output",
             toolCallId,
             output: cloneValue(output),
+            preliminary: options.preliminary,
             providerExecuted: clonedOptions.providerExecuted,
             toolMetadata: clonedOptions.toolMetadata,
             dynamic: clonedOptions.dynamic,
@@ -182,6 +194,7 @@ export function createEventWriter<
         },
 
         error(errorText = "Tool call failed.") {
+          assertResolvable("error")
           events.push({
             kind: "tool-error",
             toolCallId,
@@ -195,6 +208,7 @@ export function createEventWriter<
         },
 
         denied() {
+          assertResolvable("denied")
           events.push({
             kind: "tool-denied",
             toolCallId,
@@ -202,6 +216,25 @@ export function createEventWriter<
 
           return handle
         },
+      }
+
+      if (clonedOptions.needsApproval) {
+        const approvalId =
+          clonedOptions.approvalId ?? context.ids.nextApprovalId()
+
+        if (clonedOptions.approvalId !== undefined) {
+          context.ids.reserveApprovalId(clonedOptions.approvalId)
+        }
+
+        events.push({
+          kind: "tool-approval-request",
+          toolCallId,
+          approvalId,
+          output: clonedOptions.output,
+          errorText: clonedOptions.errorText,
+        })
+
+        return handle
       }
 
       if (clonedOptions.output !== undefined) {
