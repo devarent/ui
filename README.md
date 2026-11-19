@@ -1,4 +1,4 @@
-[![CI](https://github.com/aryafatthurahman4-collab/ui-modernized/actions/workflows/ci.yml/badge.svg)](https://github.com/aryafatthurahman4-collab/ui-modernized/actions/workflows/ci.yml)
+[![CI](https://github.com/devarent/ui-modernized/actions/workflows/ci.yml/badge.svg)](https://github.com/devarent/ui-modernized/actions/workflows/ci.yml)
 
 # shadcn/ui
 
