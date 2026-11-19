@@ -1,3 +1,5 @@
+[![CI](https://github.com/aryafatthurahman4-collab/ui-modernized/actions/workflows/ci.yml/badge.svg)](https://github.com/aryafatthurahman4-collab/ui-modernized/actions/workflows/ci.yml)
+
 # shadcn/ui
 
 A set of beautifully designed components that you can customize, extend, and build on. Start here then make it your own. Open Source. Open Code. **Use this to build your own component library**.

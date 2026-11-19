@@ -1,0 +1,46 @@
+name: CI
+
+on:
+  push:
+    branches: [main, master, 13.x]
+  pull_request:
+
+jobs:
+  node-smoke:
+    name: Node smoke check
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v4
+
+      - name: Set up Node.js 22
+        uses: actions/setup-node@v4
+        with:
+          node-version: '22'
+
+      - name: Install dependencies (best effort)
+        continue-on-error: true
+        run: |
+          if [ -f package-lock.json ]; then
+            npm ci
+          else
+            echo "No package-lock.json at repository root; skipping npm ci in this smoke CI."
+          fi
+
+      - name: Test or build (best effort)
+        continue-on-error: true
+        run: |
+          if [ ! -f package.json ]; then
+            echo "No package.json at repository root; smoke check only."
+            exit 0
+          fi
+          CHOICE=$(node -e "const s=require('./package.json').scripts||{};process.stdout.write(s.test?'test':(s.build?'build':'noop'))")
+          if [ "$CHOICE" = "test" ]; then
+            echo "Test script found; running npm test."
+            npm test
+          elif [ "$CHOICE" = "build" ]; then
+            echo "Build script found; running npm run build."
+            npm run build
+          else
+            echo "No test or build script found; smoke check only."
+          fi

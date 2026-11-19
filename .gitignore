@@ -70,3 +70,10 @@ vendor/
 venv/
 .terraform/
 *.log
+
+# Modern CI ignores
+.env
+*.log
+node_modules/
+target/
+.terraform/
